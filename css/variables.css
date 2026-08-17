@@ -1,0 +1,31 @@
+:root {
+  /* Colors — SPEC §5 */
+  --color-bg: #0a0a0b;
+  --color-text: #ededed;
+  --color-accent: #7c6ff0;
+  --color-muted: #8a8a93;
+  --color-border: #242428;
+
+  /* Typography — SPEC §5 */
+  --font-heading: "Newsreader", Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+
+  --fs-sm: clamp(0.82rem, 0.78rem + 0.2vw, 0.9rem);
+  --fs-base: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+  --fs-lg: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  --fs-xl: clamp(1.75rem, 1.35rem + 1.8vw, 2.75rem);
+  --fs-2xl: clamp(2.5rem, 1.7rem + 3.5vw, 4.25rem);
+
+  /* Spacing scale */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2.5rem;
+  --space-5: 4rem;
+  --space-6: 6rem;
+
+  --max-width: 72rem;
+  --transition-fast: 150ms ease;
+  --transition-base: 280ms ease;
+}
