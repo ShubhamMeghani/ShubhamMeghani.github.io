@@ -196,6 +196,42 @@
   color: var(--color-muted);
 }
 
+/* Achievements — visually distinct from .credential (badge, not a
+   bordered role description) so it reads as an award, not a role */
+
+.achievements {
+  margin-top: var(--space-4);
+}
+
+.achievements-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--color-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-2);
+}
+
+.achievement {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.achievement-title {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--color-accent);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+}
+
+.achievement-desc {
+  color: var(--color-muted);
+}
+
 /* Contact list */
 
 .contact-list {
