@@ -1,9 +1,7 @@
 # Implementation Plan — Shubham Meghani Portfolio
 
-Status: **PENDING APPROVAL**
-Source of truth: `SPEC.md` (approved). Each step below references the SPEC section(s) it implements and the acceptance criterion (AC) it will be verified against at the VERIFY stage. AC numbers refer to SPEC §14 in order (AC1 = content matches §4 … AC16 = no build step to deploy). Three ACs (AC8–AC10: project repository link, photo placeholder rendering, Back/Forward navigation) were inserted after the original AC7 when the project card was expanded and the History API navigation fix was added, shifting all subsequent AC numbers up by 3 from the prior version of this plan.
-
-No code or website files are created in this stage — planning only.
+Status: **IMPLEMENTED & DEPLOYED** — this plan now describes the site as actually built and live at https://shubhammeghani.github.io/
+Source of truth: `SPEC.md` (approved). Each step below references the SPEC section(s) it implements and the acceptance criterion (AC) it will be verified against at the VERIFY stage. AC numbers refer to SPEC §14 in order (AC1 = content matches §4 … AC16 = no build step to deploy; AC17 = Achievements subsection, added when the Reliance Scholar credential was implemented). Three ACs (AC8–AC10: project repository link, photo placeholder rendering, Back/Forward navigation) were inserted after the original AC7 when the project card was expanded and the History API navigation fix was added, shifting all subsequent AC numbers up by 3 from the prior version of this plan.
 
 ---
 
@@ -48,7 +46,7 @@ Single `index.html`, single page, in this order:
   - `<section id="research-projects">` — heading "Research & Projects"; one `<article class="project-card">` for the adversarial-transferability project: a "Team research project" label, the Approach/Findings/Why-it-happens description (verbatim from SPEC §4, sourced from `reference/Adversarial_Robustness_Report.pdf` as reference material only), tools list, and a "View Project Repository" link to `https://github.com/KausiganK/Adversarial-Robustness` (AC8) — structured so a second `<article class="project-card">` can be duplicated later with no layout change
   - `<section id="skills">` — heading "Technical Skills"; three grouped lists (Mathematics / Machine Learning / Programming & Tools)
   - `<section id="education">` — IISc entry (institution, program, years)
-  - `<section id="experience">` — heading "Experience / Beyond Code"; TEDxIISc entry (verbatim from SPEC §4)
+  - `<section id="experience">` — heading "Experience / Beyond Code"; TEDxIISc entry (verbatim from SPEC §4), followed by an `.achievements` subsection (a small "Achievements" label, then a `.achievement` row: a pill-shaped `.achievement-title` badge — "Reliance Scholar" — plus inline `.achievement-desc` text — "Reliance Foundation Scholarship recipient.") — AC17. Deliberately styled unlike `.credential` (no left border, no paragraph block) so it reads as an award, not a role
   - `<section id="contact">` — email (`mailto:mshubham@iisc.ac.in`), GitHub (`href="https://github.com/ShubhamMeghani"`, opens new tab), LinkedIn (`href="https://www.linkedin.com/in/shubham-meghani-74730b318"`, opens new tab) — these final URLs must be used directly as `href` values; `href="#"` placeholders must never be used for these links
 - `<footer>` — minimal, e.g. name + year
 
@@ -89,7 +87,8 @@ Single `main.js`, no dependencies, five responsibilities:
 
 1. **Section navigation via the History API (SPEC §6, §7 → AC10):**
    - `scrollToSection(id)` is a shared helper: scrolls the target section into view, instantly if `prefers-reduced-motion: reduce`, smoothly otherwise. Used by both the click handler and the `popstate` handler below, so Back/Forward and clicks scroll identically.
-   - **Nav link click:** `preventDefault()`, close the hamburger menu if open, call `scrollToSection(id)`, then `history.pushState({section: id}, "", "#" + id)` — but only if the hash is actually changing, to avoid pushing duplicate consecutive entries for the same section.
+   - **Nav link click:** `preventDefault()`, close the hamburger menu if open, call `scrollToSection(id)`, then `history.pushState({section: id}, "", "#" + id)` — but only if the hash is actually changing, to avoid pushing duplicate consecutive entries for the same section. This click handler is attached once to each `<a>` inside `#primary-nav`; the desktop inline nav and the mobile hamburger panel are the same DOM elements (CSS only repositions/hides the container), so mobile-menu taps and desktop clicks run through this identical code path — there is no separate mobile navigation implementation.
+   - **Initial-load state seeding:** on script init, `history.replaceState({section: ...}, "", location.href)` gives the very first history entry a well-formed state object (it otherwise stays `null` until the first navigation) — hardening against the first Back press behaving inconsistently, which is the most common cause of "Back exits a single-page app" reports on mobile.
    - **`popstate` listener:** fires when the user presses Back/Forward (the browser has already moved the history pointer and updated `location.hash` by this point). Reads `location.hash` (falling back to `"home"` if empty) and calls `scrollToSection(id)` — critically, it does **not** call `pushState`/`replaceState`, since that would create duplicate/incorrect history entries on top of the navigation the browser already performed.
    - **Direct load / refresh with a hash:** handled natively by the browser (it scrolls to the matching element id as part of normal page load) — no additional JS needed for this case.
    - **No full page reload** at any point: navigation only ever calls `scrollIntoView` + History API methods, never sets `location.hash` or `location.href` directly.
@@ -140,11 +139,13 @@ Covered in §2 (structure), §3 (layout/breakpoints), §6 (behavior) above. Veri
 
 ## 11. GitHub Pages Deployment (SPEC §11 → AC15, AC16)
 
-Unchanged: repo created by you, files pushed to `main` root, Pages source set to `main` / `/ (root)`, no Actions workflow, live URL checked post-push.
+Done: repository `ShubhamMeghani/ShubhamMeghani.github.io` created, files pushed to `main` root, Pages serving from `main` / `/ (root)`, no Actions workflow. Live at https://shubhammeghani.github.io/, confirmed working across five deploys: (1) initial launch, (2) headshot + expanded project card + Back/Forward fix, (3) first Reliance Scholar entry + mobile hero CTA-to-portrait gap fix, (4) Reliance Scholar restructured into a distinct Achievements subsection + more compact inter-section spacing, (5) initial-history-state hardening for mobile Back/Forward reliability.
 
 ---
 
 ## 12. Verification Plan — Mapped to Every Acceptance Criterion (SPEC §14)
+
+All criteria below were exercised during the VERIFY stage (manual testing plus targeted browser automation across several sessions) and passed. AC2 (cross-browser) and AC3 (responsive) were confirmed by the architect manually on their own laptop and Android device, rather than by automated cross-browser/device testing.
 
 | AC | Criterion | Verification method |
 |----|-----------|---------------------|
@@ -156,16 +157,17 @@ Unchanged: repo created by you, files pushed to `main` root, Pages source set to
 | AC6 | Resume PDF downloads | Manual click test once real PDF is in place |
 | AC7 | Email/GitHub/LinkedIn links work | Manual click test — URLs are final, no longer conditional |
 | AC8 | Project repository link opens the correct URL | Manual click test on "View Project Repository", confirm destination and new-tab behavior |
-| AC9 | Photo placeholder renders correctly, no overflow, at mobile/tablet/desktop | Manual visual check at all three breakpoints |
-| AC10 | Back/Forward navigation: correct history entries, correct scroll/highlight, no duplicates, no full reload | Manual test sequence: Home → About → Projects → Contact → Back → Back → Forward, checking URL hash, visible section, and active-nav highlight at every step |
+| AC9 | Photo renders correctly, no overflow, at mobile/tablet/desktop | Manual visual check at all three breakpoints, confirmed on real devices (laptop + Android) |
+| AC10 | Back/Forward navigation: correct history entries, correct scroll/highlight, no duplicates, no full reload — desktop and mobile | Manual test sequence: Home → About → Projects → Contact → Back → Back → Forward, checking URL hash, visible section, and active-nav highlight at every step (desktop, via browser automation). Mobile hamburger-menu navigation confirmed to use the identical code path via code review; initial-state seeding added as a hardening measure — pending the architect's re-verification on their Android device |
 | AC11 | WCAG 2.1 AA contrast | Automated check (axe DevTools or Lighthouse accessibility audit) |
 | AC12 | Keyboard navigable, visible focus | Manual keyboard-only walkthrough of entire page (Tab/Shift+Tab/Enter) |
 | AC13 | Animations respect reduced motion | Manual test with OS "reduce motion" toggled on/off (covers scroll-reveal, smooth-scroll, and hamburger menu) |
 | AC14 | No console errors | DevTools console check on load and on interaction |
 | AC15 | Live and reachable after push | Manual visit to deployed URL post-push |
 | AC16 | No build step to deploy | Confirmed by design (§10, §11) — no CI/build config exists in the repo |
+| AC17 | Achievements subsection (Reliance Scholar) distinct from TEDxIISc entry, no new nav item, not in Education | Manual visual check: `.achievement` renders as a pill badge + inline description, clearly distinguishable from `.credential`'s bordered role-description block; nav and Education sections confirmed unchanged |
 
 ---
 
-## Open Items / Blockers Before Full Implementation
-None. Resume PDF, GitHub URL, LinkedIn URL, and mobile nav pattern are all resolved and incorporated above.
+## Final Status
+Implementation complete and deployed. No open items or blockers remain. All content, assets (resume, headshot), links (contact, project repository), navigation behavior (including the Back/Forward History API fix, which applies identically to desktop and mobile hamburger-menu navigation, plus an initial-history-state hardening measure for mobile reliability), and the Achievements subsection described above are live at https://shubhammeghani.github.io/. The architect should re-verify Back/Forward on their Android device against this latest deploy.

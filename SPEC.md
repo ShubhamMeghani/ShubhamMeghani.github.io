@@ -1,7 +1,8 @@
 # Website Specification — Shubham Meghani Portfolio
 
-Status: **APPROVED**
+Status: **APPROVED — IMPLEMENTED & DEPLOYED**
 Process: SPEC → PLAN → IMPLEMENT → VERIFY → ITERATE (this document is the source of truth for all later stages)
+Live site: https://shubhammeghani.github.io/
 
 ## 1. Purpose & Goals
 A personal academic/professional portfolio for a Mathematics & Computing undergraduate at IISc working in AI/ML, built as a Week 02 Spec-Driven Development course assignment. Goals: present identity, research/project work, skills, and education credibly to recruiters, faculty, and research collaborators; support future extension (more projects) without redesign.
@@ -59,7 +60,10 @@ No separate pages, no Publications section, no Blog.
 **Experience / Beyond Code:**
 - **TEDxIISc — Sponsorship & Partnerships**
   Worked on sponsor outreach and partnership development for TEDxIISc, including communicating with potential sponsors, understanding their branding and association requirements, preparing sponsorship proposals, and coordinating with the team to develop suitable sponsor benefits.
-  (No metrics, achievements, sponsor names, or additional responsibilities beyond this are to be added.)
+  (No metrics, sponsor names, or additional responsibilities beyond this are to be added.)
+- **Achievements** — a small subsection nested within Experience / Beyond Code (not a separate top-level nav section, not moved into Education), styled visually distinct from the TEDxIISc entry (a compact badge/pill with an inline description, not a bordered role-description block) so it clearly reads as an award rather than a role:
+  - **Reliance Scholar** — Reliance Foundation Scholarship recipient.
+  No additional details about the scholarship are to be added beyond this.
 
 **Contact:**
 - Email: mshubham@iisc.ac.in
@@ -67,7 +71,7 @@ No separate pages, no Publications section, no Blog.
 - LinkedIn: https://www.linkedin.com/in/shubham-meghani-74730b318
 - Plain links, no contact form.
 
-**Resume:** Downloadable PDF, ready to hand off. Linked as a static file (e.g. `/assets/resume.pdf`), opens/downloads directly — no invented content.
+**Resume:** Downloadable PDF, linked from the hero section as a static file (`assets/resume/Shubham Harikrishnabhai Meghani Resume.pdf`), opens/downloads directly — no invented content.
 
 ## 5. Visual Design System (approved)
 
@@ -97,10 +101,11 @@ No separate pages, no Publications section, no Blog.
 - Projects section built so a new project can be added by duplicating one structured HTML block/template — no redesign needed
 - Below the tablet breakpoint, primary nav collapses into a hamburger menu (toggle button that opens/closes an overlay or panel listing the same section links)
 - Section navigation uses the History API correctly (no full page reloads):
-  - Clicking a nav link creates a history entry, updates the URL hash, and smoothly scrolls to the section (instantly if `prefers-reduced-motion: reduce`)
-  - Browser Back/Forward navigate between previously visited sections and scroll to the corresponding section, without creating duplicate history entries
+  - Clicking a nav link — desktop inline nav or the mobile hamburger menu alike, via the same shared link elements and click handling — creates a history entry, updates the URL hash, and smoothly scrolls to the section (instantly if `prefers-reduced-motion: reduce`)
+  - Browser Back/Forward navigate between previously visited sections and scroll to the corresponding section, without creating duplicate history entries — required on both desktop and mobile (Android)
   - The active-nav highlight stays correct after Back/Forward
   - Opening or refreshing a URL with a section hash opens directly to that section
+  - The initial page-load history entry is seeded with a well-formed state object so the very first Back press behaves consistently
 
 ## 7. Responsive Behavior
 - Fully responsive across mobile (~360–480px), tablet (~768px), and desktop (~1024px+) widths
@@ -130,13 +135,15 @@ Plain HTML/CSS/JS, no framework, no build step, no npm dependencies.
 
 ## 11. Hosting & Deployment
 - GitHub Pages, served directly from the `main` branch root — no GitHub Actions/build pipeline
-- Exact repo name/final URL to be determined when the repo is created
-- Acceptance test: pushing to `main` results in the live GitHub Pages URL reflecting the change with no manual build step
+- Repository: `ShubhamMeghani/ShubhamMeghani.github.io`. Live URL: https://shubhammeghani.github.io/
+- Acceptance test: pushing to `main` results in the live GitHub Pages URL reflecting the change with no manual build step — confirmed working across multiple deploys
 
-## 12. Assets/Info Still Needed Before Implementation
-- Resume PDF file — ready, will be provided before implementation
-- GitHub profile URL — provided: https://github.com/ShubhamMeghani
-- LinkedIn profile URL — provided: https://www.linkedin.com/in/shubham-meghani-74730b318
+## 12. Assets/Info (all provided and in use)
+- Resume PDF — in place at `assets/resume/Shubham Harikrishnabhai Meghani Resume.pdf`
+- Headshot photo — in place at `assets/images/1787039088135(1).png`
+- GitHub profile URL: https://github.com/ShubhamMeghani
+- LinkedIn profile URL: https://www.linkedin.com/in/shubham-meghani-74730b318
+- Project repository URL: https://github.com/KausiganK/Adversarial-Robustness
 
 ## 13. Out of Scope
 Contact form, blog, light-mode toggle, publications section, analytics/tracking, additional projects beyond the one specified, GPA, any content/links/results not explicitly provided by the architect (Shubham).
@@ -150,11 +157,12 @@ Contact form, blog, light-mode toggle, publications section, analytics/tracking,
 - [ ] Resume PDF downloads/opens successfully
 - [ ] Email, GitHub, LinkedIn links function correctly
 - [ ] Project repository link opens the correct URL in a new tab
-- [ ] Photo placeholder renders correctly (no overflow, no broken-image appearance) at mobile/tablet/desktop widths
-- [ ] Back/Forward navigation works as specified in §6 (correct history entries, correct scroll position, correct active-nav highlight, no duplicate entries, no full page reload)
+- [ ] Photo renders correctly (no overflow, no broken-image appearance) at mobile/tablet/desktop widths
+- [ ] Back/Forward navigation works as specified in §6 (correct history entries, correct scroll position, correct active-nav highlight, no duplicate entries, no full page reload), for both desktop nav clicks and mobile hamburger-menu navigation
 - [ ] Contrast ratios pass WCAG 2.1 AA (verified via automated tool, e.g. axe or Lighthouse)
 - [ ] Fully keyboard-navigable with visible focus states
 - [ ] Animations respect `prefers-reduced-motion`, including hamburger menu open/close
 - [ ] No console errors
 - [ ] Site is live and reachable at the GitHub Pages URL after push to `main`
 - [ ] No build step required to deploy
+- [ ] Achievements subsection (Reliance Scholar) renders inside Experience / Beyond Code, visually distinct from the TEDxIISc entry, with no new nav item and not moved into Education

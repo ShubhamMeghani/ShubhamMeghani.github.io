@@ -8,6 +8,17 @@
     history.scrollRestoration = "manual";
   }
 
+  // Seed the initial entry with a well-formed state object (it otherwise
+  // stays `null` until the first pushState), so the very first Back press
+  // — the most common failure point for "Back exits a single-page app"
+  // reports on mobile — has a consistent state to land on instead of an
+  // untagged entry.
+  history.replaceState(
+    { section: location.hash ? location.hash.slice(1) : "home" },
+    "",
+    location.href
+  );
+
   function prefersReducedMotion() {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
