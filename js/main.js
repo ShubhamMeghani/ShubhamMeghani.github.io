@@ -148,6 +148,15 @@
   function scrollToSection(id) {
     var target = document.getElementById(id);
     if (!target) return;
+    // Reveal the destination immediately rather than waiting on the
+    // IntersectionObserver below: for an explicit jump (nav click,
+    // Back/Forward) straight to a section that was never scrolled past,
+    // it can land in view still in its pre-reveal state (faded out,
+    // offset) for up to the 500ms reveal transition — visible as a
+    // "jump then slowly settle" artifact. Explicit navigation should
+    // show the destination immediately; the fade/slide-in remains for
+    // sections encountered by organic scrolling.
+    target.classList.add("is-visible");
     target.scrollIntoView({
       behavior: prefersReducedMotion() ? "auto" : "smooth",
       block: "start",

@@ -130,6 +130,7 @@ No separate pages, no Publications section, no Blog.
 - Subtle fade/slide-in on scroll for section entry, subtle hover/transition states, small UI transitions (e.g. nav active state, hamburger menu open/close)
 - No parallax, no continuously moving/looping backgrounds, no flashy transitions
 - All animation disabled/reduced when `prefers-reduced-motion: reduce` is set, including the hamburger menu open/close transition
+- Explicit navigation (nav-link clicks, Back/Forward) shows the destination section immediately, fully revealed — the fade/slide-in reveal only plays for sections encountered by organic scrolling, so jumping directly to a section never shows it mid-transition
 
 ## 10. Technical Stack
 Plain HTML/CSS/JS, no framework, no build step, no npm dependencies.
@@ -161,6 +162,7 @@ Contact form, blog, light-mode toggle, publications section, analytics/tracking,
 - [ ] Photo renders correctly (no overflow, no broken-image appearance) at mobile/tablet/desktop widths
 - [ ] Back/Forward navigation works as specified in §6 (correct history entries, correct scroll position, correct active-nav highlight, no duplicate entries, no full page reload), for both desktop nav clicks and mobile hamburger-menu navigation
 - [ ] Pressing Back while the mobile hamburger menu is open closes the menu rather than leaving the site; the menu's history entry does not linger after it is closed by any method (link tap, toggle button, Escape, or Back)
+- [ ] Navigating directly to a section (nav-link click or Back/Forward) shows it fully in place immediately — no visible blank/faded state or delayed settle from the scroll-reveal animation
 - [ ] Contrast ratios pass WCAG 2.1 AA (verified via automated tool, e.g. axe or Lighthouse)
 - [ ] Fully keyboard-navigable with visible focus states
 - [ ] Animations respect `prefers-reduced-motion`, including hamburger menu open/close
