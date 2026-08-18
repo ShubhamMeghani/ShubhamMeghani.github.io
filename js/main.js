@@ -29,6 +29,15 @@
   var sections = Array.prototype.slice.call(document.querySelectorAll("main section[id]"));
   var MENU_ANIM_MS = 280;
   var closeTimer = null;
+  // True while the open hamburger menu has its own pushed history entry
+  // (see openMenu). Lets Back/Forward close the menu instead of leaving
+  // the site, since opening the menu otherwise makes no URL/hash change
+  // for Back to "undo".
+  var menuOpenViaHistory = false;
+  // Set right before we programmatically call history.back() to pop the
+  // menu's own entry (see closeMenu), so the popstate that call triggers
+  // is ignored instead of being treated as a real Back/Forward navigation.
+  var suppressNextPopstate = false;
 
   var linkByHref = {};
   navLinks.forEach(function (link) {
@@ -67,6 +76,16 @@
     toggle.setAttribute("aria-label", "Close menu");
     document.addEventListener("keydown", onKeydown);
 
+    // Give the open menu its own history entry (same URL, just a marker
+    // state) so a mobile edge-swipe/hardware Back press closes the menu
+    // first instead of immediately leaving the site.
+    history.pushState(
+      { menuOpen: true, section: location.hash ? location.hash.slice(1) : "home" },
+      "",
+      location.href
+    );
+    menuOpenViaHistory = true;
+
     if (prefersReducedMotion()) {
       nav.classList.add("is-open");
       focusFirstLink();
@@ -82,6 +101,13 @@
 
   function closeMenu(options) {
     var returnFocus = !options || options.returnFocus !== false;
+    // Set when closeMenu is called *from* the popstate handler (the user
+    // already navigated away from the menu-open entry) — skip popping
+    // history again in that case, or set when the caller is about to do
+    // its own history.replaceState right after (nav link click) so the
+    // "menu open" step and the navigation collapse into one entry.
+    var viaPopstate = options && options.viaPopstate;
+    var keepHistoryEntry = options && options.keepHistoryEntry;
 
     toggle.setAttribute("aria-expanded", "false");
     toggle.setAttribute("aria-label", "Open menu");
@@ -94,6 +120,17 @@
       closeTimer = window.setTimeout(function () {
         nav.hidden = true;
       }, MENU_ANIM_MS);
+    }
+
+    if (menuOpenViaHistory && !viaPopstate && !keepHistoryEntry) {
+      // Closed directly (toggle button or Escape), not via Back/Forward or
+      // a link navigation — remove the "menu open" entry we pushed so it
+      // doesn't linger as a dead step in the back-stack.
+      menuOpenViaHistory = false;
+      suppressNextPopstate = true;
+      history.back();
+    } else if (!keepHistoryEntry) {
+      menuOpenViaHistory = false;
     }
 
     if (returnFocus) toggle.focus();
@@ -130,12 +167,20 @@
       if (!document.getElementById(targetId)) return;
       event.preventDefault();
 
+      var wasOpenViaHistory = menuOpenViaHistory;
       if (toggle.getAttribute("aria-expanded") === "true") {
-        closeMenu({ returnFocus: false });
+        // Close visually only — leave its history entry in place so the
+        // replaceState/pushState below can fold "menu open" + "navigate"
+        // into a single net back-stack step.
+        closeMenu({ returnFocus: false, keepHistoryEntry: true });
       }
+      menuOpenViaHistory = false;
 
       scrollToSection(targetId);
-      if (location.hash !== "#" + targetId) {
+
+      if (wasOpenViaHistory) {
+        history.replaceState({ section: targetId }, "", "#" + targetId);
+      } else if (location.hash !== "#" + targetId) {
         history.pushState({ section: targetId }, "", "#" + targetId);
       }
     });
@@ -145,9 +190,29 @@
   // updated location.hash by the time this fires, so we only scroll —
   // pushing/replacing history here would create duplicate entries.
   window.addEventListener("popstate", function () {
-    if (toggle.getAttribute("aria-expanded") === "true") {
-      closeMenu({ returnFocus: false });
+    if (suppressNextPopstate) {
+      // This popstate was triggered by our own history.back() call inside
+      // closeMenu (closing the menu directly, not via Back/Forward) —
+      // everything relevant already happened synchronously, so ignore it.
+      suppressNextPopstate = false;
+      menuOpenViaHistory = false;
+      return;
     }
+
+    var wasMenuOpen = menuOpenViaHistory;
+    menuOpenViaHistory = false;
+
+    if (toggle.getAttribute("aria-expanded") === "true") {
+      closeMenu({ returnFocus: false, viaPopstate: true });
+    }
+
+    if (wasMenuOpen) {
+      // We just moved off the "menu open" marker entry; opening the menu
+      // never changes the hash, so the underlying section is unchanged —
+      // nothing further to scroll to.
+      return;
+    }
+
     var id = location.hash ? location.hash.slice(1) : "home";
     scrollToSection(id);
   });

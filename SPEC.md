@@ -106,6 +106,7 @@ No separate pages, no Publications section, no Blog.
   - The active-nav highlight stays correct after Back/Forward
   - Opening or refreshing a URL with a section hash opens directly to that section
   - The initial page-load history entry is seeded with a well-formed state object so the very first Back press behaves consistently
+  - Opening the mobile hamburger menu creates its own history entry (no URL/hash change), so an edge-swipe or hardware Back press while the menu is open closes the menu instead of leaving the site; choosing a section link while the menu is open collapses "menu open" and "navigate to section" into a single back-stack step
 
 ## 7. Responsive Behavior
 - Fully responsive across mobile (~360–480px), tablet (~768px), and desktop (~1024px+) widths
@@ -159,6 +160,7 @@ Contact form, blog, light-mode toggle, publications section, analytics/tracking,
 - [ ] Project repository link opens the correct URL in a new tab
 - [ ] Photo renders correctly (no overflow, no broken-image appearance) at mobile/tablet/desktop widths
 - [ ] Back/Forward navigation works as specified in §6 (correct history entries, correct scroll position, correct active-nav highlight, no duplicate entries, no full page reload), for both desktop nav clicks and mobile hamburger-menu navigation
+- [ ] Pressing Back while the mobile hamburger menu is open closes the menu rather than leaving the site; the menu's history entry does not linger after it is closed by any method (link tap, toggle button, Escape, or Back)
 - [ ] Contrast ratios pass WCAG 2.1 AA (verified via automated tool, e.g. axe or Lighthouse)
 - [ ] Fully keyboard-navigable with visible focus states
 - [ ] Animations respect `prefers-reduced-motion`, including hamburger menu open/close
