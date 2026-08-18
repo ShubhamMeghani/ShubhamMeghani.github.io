@@ -31,13 +31,22 @@ No separate pages, no Publications section, no Blog.
 **Bio (About):**
 > I'm a Mathematics and Computing undergraduate at the Indian Institute of Science, Bangalore, interested in the intersection of mathematical reasoning, machine learning, and software engineering. My recent work includes exploring adversarial robustness and the transferability of adversarial examples across neural network models. I enjoy working on technically challenging problems that combine theory with computation.
 
-**Photo:** None for now (explicitly deferred; layout must not depend on a photo).
+**Photo:** A real headshot is in place in the Hero section, at `assets/images/1787039088135(1).png`, presented via an `<img>` with `alt="Shubham Harikrishnabhai Meghani"`, cropped with `object-fit: cover` in the same portrait-shaped frame originally designed for the placeholder — no layout change was needed to add it.
 
 **Research & Projects — Project 1 (primary, featured prominently):**
 - Title: Asymmetric Transferability of Adversarial Examples
-- Description: Investigating why adversarial examples transfer asymmetrically between neural network models and what model properties may contribute to this asymmetry.
+- Label: "Team research project" (this was a five-person research project; the site must not imply solo authorship, but does not list all collaborators or individual contributions)
+- Description (verbatim, source: `reference/Adversarial_Robustness_Report.pdf`, used as source material only — never linked, deployed, or committed):
+  > We investigated why adversarial examples transfer asymmetrically between neural network models, and identified which model properties drive this asymmetry.
+  >
+  > **Approach.** We trained five architectures — ResNet18, ResNet34, VGG11, VGG16, and DenseNet121 — on CIFAR-10, then generated adversarial examples on each model using PGD (ε = 8/255, 20 steps) and measured how well those examples transferred to every other model (fooling rate). For each model pair, we compared transfer asymmetry against three model properties: input-gradient norm, gradient cosine similarity, and parameter count.
+  >
+  > **Findings.** Transfer was consistently asymmetric — for example, adversarial examples crafted on ResNet models transferred more effectively to VGG models than the reverse, while DenseNet showed inconsistent behavior across pairs. Gradient norm difference showed a strong, statistically significant correlation with transfer asymmetry (Pearson r = 0.96, p < 0.001), while gradient cosine similarity showed no meaningful relationship (r = −0.10) and parameter count showed only a weak one (r = 0.25).
+  >
+  > **Why it happens.** A first-order (Taylor expansion) analysis of PGD-style attacks shows that the expected change in a target model's loss from a transferred perturbation is proportional to the target's own gradient norm. Since cosine similarity between two models' gradients is inherently symmetric while their gradient norms generally are not, norm differences — not gradient alignment — are what drive the directional asymmetry.
 - Tools: Python, PyTorch, CIFAR-10, ResNet, VGG, DenseNet
-- No links, results, claims, publications, or achievements beyond this are to be added. Additional projects only on explicit approval.
+- Repository link: "View Project Repository" → `https://github.com/KausiganK/Adversarial-Robustness` (a shared/team repository — must not be presented as personally owned)
+- Do not add the diffusion-model/Incremental-Adversarial-Training thread from the same report (a separate research direction, out of scope for this project card), do not mention NeurIPS or any publication/submission/acceptance status, do not name individual collaborators, and do not add any further results/claims beyond what's written above without explicit approval. Additional projects only on explicit approval.
 
 **Technical Skills (grouped, not a flat cloud):**
 - Mathematics: Optimization, Linear Algebra, Probability, Real Analysis
@@ -87,6 +96,11 @@ No separate pages, no Publications section, no Blog.
 - No contact form, no backend, no database, no analytics/tracking
 - Projects section built so a new project can be added by duplicating one structured HTML block/template — no redesign needed
 - Below the tablet breakpoint, primary nav collapses into a hamburger menu (toggle button that opens/closes an overlay or panel listing the same section links)
+- Section navigation uses the History API correctly (no full page reloads):
+  - Clicking a nav link creates a history entry, updates the URL hash, and smoothly scrolls to the section (instantly if `prefers-reduced-motion: reduce`)
+  - Browser Back/Forward navigate between previously visited sections and scroll to the corresponding section, without creating duplicate history entries
+  - The active-nav highlight stays correct after Back/Forward
+  - Opening or refreshing a URL with a section hash opens directly to that section
 
 ## 7. Responsive Behavior
 - Fully responsive across mobile (~360–480px), tablet (~768px), and desktop (~1024px+) widths
@@ -135,6 +149,9 @@ Contact form, blog, light-mode toggle, publications section, analytics/tracking,
 - [ ] Below the tablet breakpoint, hamburger menu opens/closes via mouse and keyboard, shows visible focus states throughout, and closes automatically after a link is selected
 - [ ] Resume PDF downloads/opens successfully
 - [ ] Email, GitHub, LinkedIn links function correctly
+- [ ] Project repository link opens the correct URL in a new tab
+- [ ] Photo placeholder renders correctly (no overflow, no broken-image appearance) at mobile/tablet/desktop widths
+- [ ] Back/Forward navigation works as specified in §6 (correct history entries, correct scroll position, correct active-nav highlight, no duplicate entries, no full page reload)
 - [ ] Contrast ratios pass WCAG 2.1 AA (verified via automated tool, e.g. axe or Lighthouse)
 - [ ] Fully keyboard-navigable with visible focus states
 - [ ] Animations respect `prefers-reduced-motion`, including hamburger menu open/close

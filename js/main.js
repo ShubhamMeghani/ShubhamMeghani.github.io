@@ -1,6 +1,13 @@
 (function () {
   "use strict";
 
+  // The browser's own automatic per-history-entry scroll restoration can
+  // race with (and override) the scrollIntoView calls below on Back/Forward.
+  // We manage scroll position ourselves for every navigation, so disable it.
+  if ("scrollRestoration" in history) {
+    history.scrollRestoration = "manual";
+  }
+
   function prefersReducedMotion() {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
@@ -11,6 +18,20 @@
   var sections = Array.prototype.slice.call(document.querySelectorAll("main section[id]"));
   var MENU_ANIM_MS = 280;
   var closeTimer = null;
+
+  var linkByHref = {};
+  navLinks.forEach(function (link) {
+    linkByHref[link.getAttribute("href").slice(1)] = link;
+  });
+
+  function setActiveLink(id) {
+    var link = linkByHref[id];
+    if (!link) return;
+    navLinks.forEach(function (l) {
+      l.removeAttribute("aria-current");
+    });
+    link.setAttribute("aria-current", "page");
+  }
 
   // Mobile disclosure: the nav carries the `hidden` attribute by default in
   // the HTML itself, so it is correctly hidden from view and the
@@ -76,41 +97,60 @@
     }
   });
 
+  function scrollToSection(id) {
+    var target = document.getElementById(id);
+    if (!target) return;
+    target.scrollIntoView({
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+      block: "start",
+    });
+    // Set the active link immediately rather than waiting on the
+    // IntersectionObserver below: for a programmatic (non-user-scroll)
+    // jump — especially an instant one under reduced-motion — the
+    // observer is not guaranteed to fire promptly, which left the
+    // highlight stale after Back/Forward in testing. The observer still
+    // owns highlighting during organic mouse/trackpad scrolling.
+    setActiveLink(id);
+  }
+
   navLinks.forEach(function (link) {
     link.addEventListener("click", function (event) {
       var targetId = link.getAttribute("href").slice(1);
-      var target = document.getElementById(targetId);
+      if (!document.getElementById(targetId)) return;
+      event.preventDefault();
 
       if (toggle.getAttribute("aria-expanded") === "true") {
         closeMenu({ returnFocus: false });
       }
 
-      if (target) {
-        event.preventDefault();
-        target.scrollIntoView({
-          behavior: prefersReducedMotion() ? "auto" : "smooth",
-          block: "start",
-        });
-        history.replaceState(null, "", "#" + targetId);
+      scrollToSection(targetId);
+      if (location.hash !== "#" + targetId) {
+        history.pushState({ section: targetId }, "", "#" + targetId);
       }
     });
   });
 
-  // Active-section highlighting
-  var linkByHref = {};
-  navLinks.forEach(function (link) {
-    linkByHref[link.getAttribute("href").slice(1)] = link;
+  // Back/Forward: the browser has already moved the history pointer and
+  // updated location.hash by the time this fires, so we only scroll —
+  // pushing/replacing history here would create duplicate entries.
+  window.addEventListener("popstate", function () {
+    if (toggle.getAttribute("aria-expanded") === "true") {
+      closeMenu({ returnFocus: false });
+    }
+    var id = location.hash ? location.hash.slice(1) : "home";
+    scrollToSection(id);
   });
 
+  // Active-section highlighting during organic (mouse/trackpad) scrolling.
+  // Programmatic navigation (clicks, Back/Forward) sets the active link
+  // directly via setActiveLink() in scrollToSection() above instead of
+  // relying on this observer, which is not guaranteed to fire promptly
+  // for instant/reduced-motion scroll jumps.
   var activeObserver = new IntersectionObserver(
     function (entries) {
       entries.forEach(function (entry) {
-        var link = linkByHref[entry.target.id];
-        if (!link || !entry.isIntersecting) return;
-        navLinks.forEach(function (l) {
-          l.removeAttribute("aria-current");
-        });
-        link.setAttribute("aria-current", "page");
+        if (!entry.isIntersecting) return;
+        setActiveLink(entry.target.id);
       });
     },
     { rootMargin: "-40% 0px -55% 0px", threshold: 0 }

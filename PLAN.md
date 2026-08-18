@@ -1,7 +1,7 @@
 # Implementation Plan — Shubham Meghani Portfolio
 
 Status: **PENDING APPROVAL**
-Source of truth: `SPEC.md` (approved). Each step below references the SPEC section(s) it implements and the acceptance criterion (AC) it will be verified against at the VERIFY stage. AC numbers refer to SPEC §14 in order (AC1 = content matches §4 … AC13 = no build step to deploy, after the hamburger-menu AC was inserted at position 5).
+Source of truth: `SPEC.md` (approved). Each step below references the SPEC section(s) it implements and the acceptance criterion (AC) it will be verified against at the VERIFY stage. AC numbers refer to SPEC §14 in order (AC1 = content matches §4 … AC16 = no build step to deploy). Three ACs (AC8–AC10: project repository link, photo placeholder rendering, Back/Forward navigation) were inserted after the original AC7 when the project card was expanded and the History API navigation fix was added, shifting all subsequent AC numbers up by 3 from the prior version of this plan.
 
 No code or website files are created in this stage — planning only.
 
@@ -30,22 +30,22 @@ No code or website files are created in this stage — planning only.
     └── main.js                (nav highlighting, smooth scroll, hamburger menu, scroll-reveal, reduced-motion handling — SPEC §6, §7, §9)
 ```
 
-No bundler/build step (SPEC §10, §11 → AC13). `.nojekyll` recommended at root as a zero-cost safety addition for GitHub Pages.
+No bundler/build step (SPEC §10, §11 → AC16). `.nojekyll` recommended at root as a zero-cost safety addition for GitHub Pages.
 
 ---
 
-## 2. HTML Structure & Semantic Sections (SPEC §3, §4, §8 → AC1, AC4, AC5, AC9)
+## 2. HTML Structure & Semantic Sections (SPEC §3, §4, §8 → AC1, AC4, AC5, AC9, AC12)
 
 Single `index.html`, single page, in this order:
 
-- `<a class="skip-link" href="#main">Skip to content</a>` — first focusable element (AC9)
+- `<a class="skip-link" href="#main">Skip to content</a>` — first focusable element (AC12)
 - `<header>` containing:
   - `<button class="nav-toggle" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">` — hamburger icon, visible below tablet breakpoint only
   - `<nav id="primary-nav" aria-label="Primary">` with the anchor-link list matching each section id below; current-section link gets `aria-current="page"` (toggled by JS); at desktop/tablet widths this renders as a normal inline nav, below tablet width it becomes the toggle-controlled panel
 - `<main id="main">` containing, in order:
-  - `<section id="home">` — hero: name, identity line, short CTA links (resume, contact)
+  - `<section id="home">` — hero: name, identity line, short CTA links (resume, contact); alongside the text, `.hero-portrait` (portrait aspect ratio, corner-bracket frame reusing the project-card's accent motif) holds the real headshot as an `<img src="assets/images/1787039088135(1).png" alt="Shubham Harikrishnabhai Meghani">`, cropped via `object-fit: cover` — AC9. The container's size/position was designed in advance so the photo dropped in with no layout change
   - `<section id="about">` — bio paragraph (verbatim from SPEC §4)
-  - `<section id="research-projects">` — heading "Research & Projects"; one `<article class="project-card">` for the adversarial-transferability project (title, description, tools list) — structured so a second `<article class="project-card">` can be duplicated later with no layout change
+  - `<section id="research-projects">` — heading "Research & Projects"; one `<article class="project-card">` for the adversarial-transferability project: a "Team research project" label, the Approach/Findings/Why-it-happens description (verbatim from SPEC §4, sourced from `reference/Adversarial_Robustness_Report.pdf` as reference material only), tools list, and a "View Project Repository" link to `https://github.com/KausiganK/Adversarial-Robustness` (AC8) — structured so a second `<article class="project-card">` can be duplicated later with no layout change
   - `<section id="skills">` — heading "Technical Skills"; three grouped lists (Mathematics / Machine Learning / Programming & Tools)
   - `<section id="education">` — IISc entry (institution, program, years)
   - `<section id="experience">` — heading "Experience / Beyond Code"; TEDxIISc entry (verbatim from SPEC §4)
@@ -63,6 +63,7 @@ Every section gets a heading so structure matches the nav (AC4). Decorative moti
 - **Design tokens** (`variables.css`): CSS custom properties for the exact colors in SPEC §5, fluid type scale via `clamp()`, spacing scale for generous whitespace.
 - **Mobile-first**, `min-width` media queries at ~768px (tablet) and ~1024px (desktop), matching SPEC §7.
 - **Layout:** flexbox for nav/card rows, CSS grid for skills groups and multi-column sections at desktop width; no fixed pixel widths → no horizontal scroll at any breakpoint (AC3).
+- **Hero layout:** `.hero-layout` is a flex container (column, portrait stacked below the text, on mobile; row, portrait beside the text, at ≥768px) wrapping `.hero-content` and `.hero-portrait` — AC9.
 - **Nav below tablet breakpoint (revised — hamburger menu):**
   - `.nav-toggle` button visible only below tablet width; hidden (and inert) at tablet/desktop widths where nav renders inline as before
   - `#primary-nav` below tablet width is positioned as an overlay or slide-in panel, hidden by default (`hidden` attribute or `visibility`/`transform` off-canvas, not `display:none` alone, so it can transition), shown when `.nav-toggle`'s `aria-expanded` is `true`
@@ -78,30 +79,36 @@ Unchanged from prior plan: Newsreader/Fraunces (headings), Inter/IBM Plex Sans (
 
 ## 5. Mathematical / Computational Visual Motifs (SPEC §5 → AC2)
 
-Unchanged: hand-authored low-opacity inline SVGs (coordinate grids, line-graphs, matrix/node accents), `aria-hidden="true"`, positioned and scaled responsively via CSS, no external icon library.
+Unchanged: hand-authored low-opacity inline SVGs (coordinate grids, line-graphs, matrix/node accents), `aria-hidden="true"`, positioned and scaled responsively via CSS, no external icon library. The project-card's corner-bracket accent is factored into a reusable `.corner-frame` class, also applied to `.hero-portrait` so the two share the same accent-framing language (AC9).
 
 ---
 
-## 6. JavaScript Behavior (SPEC §6, §7 → AC4, AC5, AC10, AC11)
+## 6. JavaScript Behavior (SPEC §6, §7 → AC4, AC5, AC10, AC13, AC14)
 
-Single `main.js`, no dependencies, four responsibilities:
+Single `main.js`, no dependencies, five responsibilities:
 
-1. **Smooth scroll on nav click:** intercept anchor clicks, scroll to target section; instant jump instead of smooth when `prefers-reduced-motion: reduce` is set (SPEC §9 → AC10).
-2. **Active-section detection:** `IntersectionObserver` on all `<section>` elements toggles `aria-current="page"` on the matching nav link as sections enter/leave view.
-3. **Hamburger menu control (new — SPEC §6, §7):**
+1. **Section navigation via the History API (SPEC §6, §7 → AC10):**
+   - `scrollToSection(id)` is a shared helper: scrolls the target section into view, instantly if `prefers-reduced-motion: reduce`, smoothly otherwise. Used by both the click handler and the `popstate` handler below, so Back/Forward and clicks scroll identically.
+   - **Nav link click:** `preventDefault()`, close the hamburger menu if open, call `scrollToSection(id)`, then `history.pushState({section: id}, "", "#" + id)` — but only if the hash is actually changing, to avoid pushing duplicate consecutive entries for the same section.
+   - **`popstate` listener:** fires when the user presses Back/Forward (the browser has already moved the history pointer and updated `location.hash` by this point). Reads `location.hash` (falling back to `"home"` if empty) and calls `scrollToSection(id)` — critically, it does **not** call `pushState`/`replaceState`, since that would create duplicate/incorrect history entries on top of the navigation the browser already performed.
+   - **Direct load / refresh with a hash:** handled natively by the browser (it scrolls to the matching element id as part of normal page load) — no additional JS needed for this case.
+   - **No full page reload** at any point: navigation only ever calls `scrollIntoView` + History API methods, never sets `location.hash` or `location.href` directly.
+2. **Active-section detection:** `IntersectionObserver` on all `<section>` elements toggles `aria-current="page"` on the matching nav link as sections enter/leave view. This is purely scroll-position-driven, so it stays correct automatically after Back/Forward navigation without any extra wiring — AC10.
+3. **Hamburger menu control (SPEC §6, §7):**
    - Toggle click/Enter/Space flips `aria-expanded` on `.nav-toggle` and shows/hides `#primary-nav`
-   - When opened: focus moves to the first link inside the menu; `Escape` key closes the menu and returns focus to the toggle button
-   - Selecting any link inside the open menu closes it (and triggers the smooth-scroll/active-section logic above) — SPEC §6, AC5
-   - Open/close visual transition (slide/fade) is skipped in favor of an instant show/hide when `prefers-reduced-motion: reduce` is set — SPEC §9, AC10 (the menu's *functionality* — open, close, keyboard operability — is unaffected by reduced motion; only the transition is)
+   - When opened: focus moves to the first link inside the menu **after** the open transition/class is applied (not before), so focus never lands on a still-hidden/off-screen element; `Escape` key closes the menu and returns focus to the toggle button
+   - Selecting any link inside the open menu closes it (and triggers the navigation logic above) — SPEC §6, AC5
+   - The `popstate` handler also closes the menu if it happens to be open, for consistency
+   - Open/close visual transition (slide/fade) is skipped in favor of an instant show/hide when `prefers-reduced-motion: reduce` is set — SPEC §9, AC13 (the menu's *functionality* — open, close, keyboard operability — is unaffected by reduced motion; only the transition is)
 4. **Scroll-reveal animation:** `IntersectionObserver` adds `.is-visible` on first section entry, triggering fade/slide transition; skipped (content shown immediately) under reduced motion.
 
 No other JS — no analytics, no third-party scripts (SPEC §6, §11).
 
 ---
 
-## 7. Navigation & Active-Section Detection (SPEC §3, §6, §7 → AC4)
+## 7. Navigation & Active-Section Detection (SPEC §3, §6, §7 → AC4, AC10)
 
-Covered in §2 (structure), §3 (layout/breakpoints), §6 (behavior) above. Verification target: at desktop/tablet widths, all 7 links work and highlight as before; below tablet width, the hamburger toggle opens the menu, each link is reachable and operable by keyboard, selecting a link scrolls to the section and closes the menu, and the active-link highlight still updates correctly afterward.
+Covered in §2 (structure), §3 (layout/breakpoints), §6 (behavior) above. Verification target: at desktop/tablet widths, all 7 links work and highlight as before; below tablet width, the hamburger toggle opens the menu, each link is reachable and operable by keyboard, selecting a link scrolls to the section and closes the menu, and the active-link highlight still updates correctly afterward. Additionally (AC10): clicking through several sections and then pressing Back/Forward must move between those sections (not leave the site), scrolling to and highlighting the correct section at each step, with no duplicate history entries and no full page reload.
 
 ---
 
@@ -111,19 +118,19 @@ Covered in §2 (structure), §3 (layout/breakpoints), §6 (behavior) above. Veri
 
 ---
 
-## 9. Accessibility Requirements (SPEC §8 → AC5, AC8, AC9)
+## 9. Accessibility Requirements (SPEC §8 → AC5, AC9, AC11, AC12)
 
 - Semantic landmarks per §2 structure.
 - Skip-link, visible focus outlines (accent-colored, sufficient contrast) on all links, buttons, and menu items — explicitly including `.nav-toggle` and every link inside the open hamburger menu (SPEC §7, §8).
 - `.nav-toggle` has an accessible name (`aria-label="Open menu"`, updated to `"Close menu"` when open, or a visually-hidden text label), `aria-expanded`, and `aria-controls="primary-nav"`.
 - Menu is dismissible via `Escape` and via selecting a link; focus is managed on open/close (see §6) rather than left stranded.
 - Contrast check planned as a VERIFY-stage task: `--text`/`--bg` and `--muted`/`--bg` likely safe; `--accent` (`#7C6FF0`) on `--bg` for any text use flagged as a specific risk to measure against 4.5:1/3:1 thresholds.
-- `aria-hidden="true"` on all decorative SVG motifs.
+- `aria-hidden="true"` on all decorative SVG motifs. `.hero-portrait` now holds a real `<img>` with meaningful `alt` text, so it is no longer `aria-hidden`.
 - Full keyboard walkthrough (including hamburger menu open → navigate → close cycle) as an explicit VERIFY step.
 
 ---
 
-## 10. Animation & Reduced-Motion Behavior (SPEC §9 → AC10)
+## 10. Animation & Reduced-Motion Behavior (SPEC §9 → AC13)
 
 - All transitions (fade/slide-in, hover states, nav active-state change, **hamburger menu open/close**) defined in `motion.css` using short durations/subtle transforms only.
 - Reduced-motion check in `main.js` gates JS-driven scroll behavior, scroll-reveal class toggling, and the hamburger menu's open/close transition; a `@media (prefers-reduced-motion: reduce)` block in `motion.css` sets `transition: none` as a CSS-level backstop.
@@ -131,7 +138,7 @@ Covered in §2 (structure), §3 (layout/breakpoints), §6 (behavior) above. Veri
 
 ---
 
-## 11. GitHub Pages Deployment (SPEC §11 → AC12, AC13)
+## 11. GitHub Pages Deployment (SPEC §11 → AC15, AC16)
 
 Unchanged: repo created by you, files pushed to `main` root, Pages source set to `main` / `/ (root)`, no Actions workflow, live URL checked post-push.
 
@@ -148,12 +155,15 @@ Unchanged: repo created by you, files pushed to `main` root, Pages source set to
 | AC5 | Hamburger menu: keyboard operable, visible focus, closes on selection, respects reduced motion | Manual keyboard-only walkthrough below tablet width (open via keyboard, tab through links, Escape to close, select a link to auto-close); repeat with OS reduce-motion on/off |
 | AC6 | Resume PDF downloads | Manual click test once real PDF is in place |
 | AC7 | Email/GitHub/LinkedIn links work | Manual click test — URLs are final, no longer conditional |
-| AC8 | WCAG 2.1 AA contrast | Automated check (axe DevTools or Lighthouse accessibility audit) |
-| AC9 | Keyboard navigable, visible focus | Manual keyboard-only walkthrough of entire page (Tab/Shift+Tab/Enter) |
-| AC10 | Animations respect reduced motion | Manual test with OS "reduce motion" toggled on/off (covers scroll-reveal, smooth-scroll, and hamburger menu) |
-| AC11 | No console errors | DevTools console check on load and on interaction |
-| AC12 | Live and reachable after push | Manual visit to deployed URL post-push |
-| AC13 | No build step to deploy | Confirmed by design (§10, §11) — no CI/build config exists in the repo |
+| AC8 | Project repository link opens the correct URL | Manual click test on "View Project Repository", confirm destination and new-tab behavior |
+| AC9 | Photo placeholder renders correctly, no overflow, at mobile/tablet/desktop | Manual visual check at all three breakpoints |
+| AC10 | Back/Forward navigation: correct history entries, correct scroll/highlight, no duplicates, no full reload | Manual test sequence: Home → About → Projects → Contact → Back → Back → Forward, checking URL hash, visible section, and active-nav highlight at every step |
+| AC11 | WCAG 2.1 AA contrast | Automated check (axe DevTools or Lighthouse accessibility audit) |
+| AC12 | Keyboard navigable, visible focus | Manual keyboard-only walkthrough of entire page (Tab/Shift+Tab/Enter) |
+| AC13 | Animations respect reduced motion | Manual test with OS "reduce motion" toggled on/off (covers scroll-reveal, smooth-scroll, and hamburger menu) |
+| AC14 | No console errors | DevTools console check on load and on interaction |
+| AC15 | Live and reachable after push | Manual visit to deployed URL post-push |
+| AC16 | No build step to deploy | Confirmed by design (§10, §11) — no CI/build config exists in the repo |
 
 ---
 

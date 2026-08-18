@@ -135,8 +135,15 @@ main {
   pointer-events: none;
 }
 
-.hero-content {
+.hero-layout {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.hero-content {
   max-width: 42rem;
 }
 
@@ -219,5 +226,12 @@ main {
 
   .skills-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .hero-layout {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5);
   }
 }

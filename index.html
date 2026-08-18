@@ -52,17 +52,27 @@
   <main id="main">
     <section id="home" class="hero">
       <div class="hero-motif" aria-hidden="true"></div>
-      <div class="hero-content">
-        <h1>Shubham Harikrishnabhai Meghani</h1>
-        <p class="hero-identity">B.Tech Mathematics &amp; Computing student at IISc · AI/ML</p>
-        <div class="hero-cta">
-          <a
-            class="btn btn-primary"
-            href="assets/resume/Shubham%20Harikrishnabhai%20Meghani%20Resume.pdf"
-            download
-            >Download Resume</a
-          >
-          <a class="btn" href="#contact">Get in Touch</a>
+      <div class="hero-layout">
+        <div class="hero-content">
+          <h1>Shubham Harikrishnabhai Meghani</h1>
+          <p class="hero-identity">B.Tech Mathematics &amp; Computing student at IISc · AI/ML</p>
+          <div class="hero-cta">
+            <a
+              class="btn btn-primary"
+              href="assets/resume/Shubham%20Harikrishnabhai%20Meghani%20Resume.pdf"
+              download
+              >Download Resume</a
+            >
+            <a class="btn" href="#contact">Get in Touch</a>
+          </div>
+        </div>
+
+        <div class="hero-portrait corner-frame">
+          <img
+            class="hero-portrait-img"
+            src="assets/images/1787039088135(1).png"
+            alt="Shubham Harikrishnabhai Meghani"
+          />
         </div>
       </div>
     </section>
@@ -83,11 +93,37 @@
       <span class="section-eyebrow">02 — Research &amp; Projects</span>
       <h2>Research &amp; Projects</h2>
 
-      <article class="project-card">
+      <article class="project-card corner-frame">
+        <p class="project-meta">Team research project</p>
         <h3>Asymmetric Transferability of Adversarial Examples</h3>
         <p>
-          Investigating why adversarial examples transfer asymmetrically between neural network
-          models and what model properties may contribute to this asymmetry.
+          We investigated why adversarial examples transfer asymmetrically between neural network
+          models, and identified which model properties drive this asymmetry.
+        </p>
+        <p>
+          <strong>Approach.</strong> We trained five architectures — ResNet18, ResNet34, VGG11,
+          VGG16, and DenseNet121 — on CIFAR-10, then generated adversarial examples on each model
+          using PGD (ε = 8/255, 20 steps) and measured how well those examples transferred to
+          every other model (fooling rate). For each model pair, we compared transfer asymmetry
+          against three model properties: input-gradient norm, gradient cosine similarity, and
+          parameter count.
+        </p>
+        <p>
+          <strong>Findings.</strong> Transfer was consistently asymmetric — for example,
+          adversarial examples crafted on ResNet models transferred more effectively to VGG models
+          than the reverse, while DenseNet showed inconsistent behavior across pairs. Gradient
+          norm difference showed a strong, statistically significant correlation with transfer
+          asymmetry (Pearson r = 0.96, p &lt; 0.001), while gradient cosine similarity showed no
+          meaningful relationship (r = −0.10) and parameter count showed only a weak one (r =
+          0.25).
+        </p>
+        <p>
+          <strong>Why it happens.</strong> A first-order (Taylor expansion) analysis of PGD-style
+          attacks shows that the expected change in a target model's loss from a transferred
+          perturbation is proportional to the target's own gradient norm. Since cosine similarity
+          between two models' gradients is inherently symmetric while their gradient norms
+          generally are not, norm differences — not gradient alignment — are what drive the
+          directional asymmetry.
         </p>
         <ul class="tool-list" aria-label="Tools used">
           <li>Python</li>
@@ -97,6 +133,13 @@
           <li>VGG</li>
           <li>DenseNet</li>
         </ul>
+        <a
+          class="project-link"
+          href="https://github.com/KausiganK/Adversarial-Robustness"
+          target="_blank"
+          rel="noopener"
+          >View Project Repository →</a
+        >
       </article>
     </section>
 
